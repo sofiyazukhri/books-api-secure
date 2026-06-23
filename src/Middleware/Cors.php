@@ -16,9 +16,9 @@ class Cors implements MiddlewareInterface
         } else {
             $response = $handler->handle($request);
         }
-
-        // 🚀 UPDATED: Added production preview ports (4173) to the whitelist
-        $origin = $request->getHeaderLine('Origin');
+       $origin = $request->getHeaderLine('Origin');
+        
+        // Define strict local development origins
         $allowedOrigins = [
             'http://localhost:5173', 
             'http://127.0.0.1:5173',
@@ -26,7 +26,12 @@ class Cors implements MiddlewareInterface
             'http://127.0.0.1:4173'
         ];
         
-        $allowOrigin = in_array($origin, $allowedOrigins) ? $origin : 'http://localhost:5173';
+        if (in_array($origin, $allowedOrigins) || str_ends_with($origin, '.vercel.app')) {
+            $allowOrigin = $origin;
+        } else {
+            // Default safe fallback for local environment match
+            $allowOrigin = 'http://localhost:5173';
+        }
 
         return $response
             ->withHeader('Access-Control-Allow-Origin', $allowOrigin)
